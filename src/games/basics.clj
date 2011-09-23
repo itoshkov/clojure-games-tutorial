@@ -1,4 +1,4 @@
-(ns games.skeleton
+(ns games.basics
   (:import (javax.swing JPanel JFrame ImageIcon)
            (java.awt BasicStroke Color RenderingHints)
            (java.awt.geom AffineTransform Ellipse2D$Double)))
@@ -43,15 +43,14 @@
 (defn donut []
   (frame (donut-board) :title "Donut" :size [360 310]))
 
-#_
 (defn image-board []
-  (let [ii (ImageIcon. (.getResource (.getClass) "yellow-rose.jpg"))
+  (let [ii (ImageIcon. (.getResource (clojure.lang.RT/baseLoader) "yellow-rose.jpg"))
         img (.getImage ii)]
    (proxy [JPanel]
        []
      (paint [g]
-       (.drawImage g img 10 10 null)))))
+       (.drawImage g img 10 10 nil)))))
 
-#_
+
 (defn image []
   (frame (image-board) :title "Yellow Rose" :size [280 240]))
