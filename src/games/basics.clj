@@ -1,18 +1,8 @@
 (ns games.basics
+  (:use [games.frame :only [frame]])
   (:import (javax.swing JPanel JFrame ImageIcon)
            (java.awt BasicStroke Color RenderingHints)
            (java.awt.geom AffineTransform Ellipse2D$Double)))
-
-
-(defn frame
-  [content & {:keys [title size]
-              :or {title "Untitled", size [300 300]}}]
-  (doto (JFrame.)
-    (.add content)
-    (.setTitle title)
-    (.setSize (first size) (second size))
-    (.setLocationRelativeTo nil)
-    (.setVisible true)))
 
 
 (defn skeleton []
