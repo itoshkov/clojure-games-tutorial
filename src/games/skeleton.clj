@@ -1,6 +1,6 @@
 (ns games.skeleton
-  (:import (javax.swing JPanel JFrame)
-           (java.awt BasicStroke Color Dimension Graphics Graphics2D RenderingHints)
+  (:import (javax.swing JPanel JFrame ImageIcon)
+           (java.awt BasicStroke Color RenderingHints)
            (java.awt.geom AffineTransform Ellipse2D$Double)))
 
 
@@ -42,3 +42,16 @@
 
 (defn donut []
   (frame (donut-board) :title "Donut" :size [360 310]))
+
+#_
+(defn image-board []
+  (let [ii (ImageIcon. (.getResource (.getClass) "yellow-rose.jpg"))
+        img (.getImage ii)]
+   (proxy [JPanel]
+       []
+     (paint [g]
+       (.drawImage g img 10 10 null)))))
+
+#_
+(defn image []
+  (frame (image-board) :title "Yellow Rose" :size [280 240]))
