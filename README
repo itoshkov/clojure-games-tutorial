@@ -1,13 +1,9 @@
-# games
+# Clojure 2d games tutorial
 
-FIXME: write description
-
-## Usage
-
-FIXME: write
+A translation of [java 2d games tutorial](http://zetcode.com/tutorials/javagamestutorial/) in clojure.
 
 ## License
 
-Copyright (C) 2011 FIXME
+Copyright &copy; 2011 Ivan Toshkov
 
 Distributed under the Eclipse Public License, the same as Clojure.
