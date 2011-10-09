@@ -1,4 +1,4 @@
-(ns games.frame
+(ns games.utils
   (:import (javax.swing JFrame)))
 
 (defn frame

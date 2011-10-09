@@ -1,5 +1,5 @@
 (ns games.animation
-  (:use [games.frame :only [frame load-resource]])
+  (:use [games.utils :only [frame load-resource]])
   (:import (javax.swing JPanel ImageIcon Timer)
            (java.awt Color Toolkit)
            (java.awt.event ActionListener)))

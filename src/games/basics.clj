@@ -1,5 +1,5 @@
 (ns games.basics
-  (:use [games.frame :only [frame load-resource]])
+  (:use [games.utils :only [frame load-resource]])
   (:import (javax.swing JPanel ImageIcon)
            (java.awt BasicStroke Color RenderingHints)
            (java.awt.geom AffineTransform Ellipse2D$Double)))
