@@ -1,6 +1,6 @@
 (ns games.basics
-  (:use [games.frame :only [frame]])
-  (:import (javax.swing JPanel JFrame ImageIcon)
+  (:use [games.frame :only [frame load-resource]])
+  (:import (javax.swing JPanel ImageIcon)
            (java.awt BasicStroke Color RenderingHints)
            (java.awt.geom AffineTransform Ellipse2D$Double)))
 
@@ -34,7 +34,7 @@
   (frame (donut-board) :title "Donut" :size [360 310]))
 
 (defn image-board []
-  (let [ii (ImageIcon. (.getResource (clojure.lang.RT/baseLoader) "yellow-rose.jpg"))
+  (let [ii (ImageIcon. (load-resource "yellow-rose.jpg"))
         img (.getImage ii)]
    (proxy [JPanel]
        []

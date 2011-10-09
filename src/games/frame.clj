@@ -11,3 +11,5 @@
     (.setLocationRelativeTo nil)
     (.setVisible true)))
 
+(defn load-resource [res]
+  (.getResource (clojure.lang.RT/baseLoader) res))
