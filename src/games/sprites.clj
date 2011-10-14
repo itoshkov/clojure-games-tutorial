@@ -13,54 +13,61 @@
     (Craft. x y 0 0 img)))
 
 (defn- move-craft [craft]
-  (let [nx (+ (:x craft) (:dx craft))
-        ny (+ (:y craft) (:dy craft))]
+  (let [nx (mod (+ (:x craft) (:dx craft)) 400)
+        ny (mod (+ (:y craft) (:dy craft)) 300)]
     (assoc craft :x nx :y ny)))
 
+(defn- direction [key-code]
+  (cond
+   (= key-code KeyEvent/VK_LEFT) [:dx -1]
+   (= key-code KeyEvent/VK_RIGHT) [:dx 1]
+   (= key-code KeyEvent/VK_UP) [:dy -1]
+   (= key-code KeyEvent/VK_DOWN) [:dy 1]))
+
+(defn- move [craft key-code d]
+  (if-let [[dxy modifier] (direction key-code)]
+    (assoc craft dxy (* modifier d))
+    craft))
+
 (defn- accelerate [craft key-code d]
-  (letfn [(acceleration []
-            (cond
-             (= key-code KeyEvent/VK_LEFT) [:dx (- d)]
-             (= key-code KeyEvent/VK_RIGHT) [:dx d]
-             (= key-code KeyEvent/VK_UP) [:dy (- d)]
-             (= key-code KeyEvent/VK_DOWN) [:dy d]))]
-    (if-let [acc (acceleration)]
-      (apply assoc craft acc)
-      craft)))
+  (if-let [[dxy modifier] (direction key-code)]
+    (assoc craft dxy (+ (get craft dxy) (* d modifier)))
+    craft))
 
-(defn- make-board []
-  (let [craft (ref (make-craft 40 60))
+(defn- make-board
+  ([] (make-board accelerate))
+  ([fn] (let [craft (ref (make-craft 40 60))
 
-        t-adapter (proxy [KeyAdapter]
-                      []
+              t-adapter (proxy [KeyAdapter]
+                            []
 
-                    (keyPressed [e]
-                      (dosync (alter craft accelerate (.getKeyCode e) 1)))
+                          (keyPressed [e]
+                            (dosync (alter craft fn (.getKeyCode e) 1)))
 
-                    (keyReleased [e]
-                      (dosync (alter craft accelerate (.getKeyCode e) 0))))
+                          (keyReleased [e]
+                            (dosync (alter craft fn (.getKeyCode e) 0))))
 
-        board (proxy [JPanel ActionListener]
-                  []
+              board (proxy [JPanel ActionListener]
+                        []
 
-                (paint [g]
-                  (proxy-super paint g)
-                  (.drawImage g (:image @craft) (:x @craft) (:y @craft) this)
-                  (-> (Toolkit/getDefaultToolkit) .sync)
-                  (.dispose g))
+                      (paint [g]
+                        (proxy-super paint g)
+                        (.drawImage g (:image @craft) (:x @craft) (:y @craft) this)
+                        (-> (Toolkit/getDefaultToolkit) .sync)
+                        (.dispose g))
 
-                (actionPerformed [e]
-                  (dosync (alter craft move-craft))
-                  (proxy-super repaint)))
+                      (actionPerformed [e]
+                        (dosync (alter craft move-craft))
+                        (proxy-super repaint)))
 
-        timer (Timer. 5 board)]
+              timer (Timer. 5 board)]
 
-    (.addKeyListener board t-adapter)
-    (.setFocusable board true)
-    (.setBackground board Color/WHITE)
-    (.setDoubleBuffered board true)
-    (.start timer)
-    board))
+          (.addKeyListener board t-adapter)
+          (.setFocusable board true)
+          (.setBackground board Color/GREEN)
+          (.setDoubleBuffered board true)
+          (.start timer)
+          board)))
 
-(defn r-type []
-  (frame (make-board) :title "R - Type" :size [400 300]))
+(defn r-type [fn]
+  (frame (make-board fn) :title "R - Type" :size [400 300]))
