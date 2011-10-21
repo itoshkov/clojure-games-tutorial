@@ -1,16 +1,24 @@
 (ns games.sprites
   (:use [games.utils :only [frame load-resource]])
+  (:require [clojure.tools.logging :as logging])
   (:import (javax.swing ImageIcon JPanel Timer)
            (java.awt Color Toolkit)
            (java.awt.event ActionListener KeyAdapter KeyEvent)))
+
+(def board-width 390)
+(def missile-speed 2)
+(def craft-size 6)
+
+(let [craft (ImageIcon. (load-resource "craft.png"))
+      missile (ImageIcon. (load-resource "missile.png"))]
+  (def craft-image (.getImage craft))
+  (def missile-image (.getImage missile)))
 
 (defrecord Craft
     [x y dx dy image])
 
 (defn- make-craft [x y]
-  (let [ii (ImageIcon. (load-resource "craft.png"))
-        img (.getImage ii)]
-    (Craft. x y 0 0 img)))
+  (Craft. x y 0 0 craft-image))
 
 (defn- move-craft [craft]
   (let [nx (mod (+ (:x craft) (:dx craft)) 400)
@@ -34,6 +42,22 @@
     (assoc craft dxy (+ (get craft dxy) (* d modifier)))
     craft))
 
+(defrecord Missile
+    [x y visible? image])
+
+(defn- make-missile [x y]
+  (Missile. x y true missile-image))
+
+(defn- move-missile [missile]
+  (let [nx (+ (:x missile) missile-speed)]
+    (assoc missile
+      :x nx
+      :visible? (< nx board-width))))
+
+(def keys-set (ref #{}))
+
+(def missiles (ref []))
+
 (defn- make-board
   ([] (make-board accelerate))
   ([fn] (let [craft (ref (make-craft 40 60))
@@ -42,7 +66,15 @@
                             []
 
                           (keyPressed [e]
-                            (dosync (alter craft fn (.getKeyCode e) 1)))
+                            (let [k-code (.getKeyCode e)]
+                              (dosync (commute keys-set conj k-code))
+                              (if (= k-code KeyEvent/VK_SPACE)
+                                (dosync
+                                 (alter missiles conj
+                                        (make-missile (+ (:x craft) craft-size)
+                                                      (+ (:y craft) (/ craft-size 2)))))
+                                (dosync
+                                 (alter craft fn (.getKeyCode e) 1)))))
 
                           (keyReleased [e]
                             (dosync (alter craft fn (.getKeyCode e) 0))))
@@ -52,19 +84,29 @@
 
                       (paint [g]
                         (proxy-super paint g)
+
                         (.drawImage g (:image @craft) (:x @craft) (:y @craft) this)
+
+                        (doseq [m @missiles]
+                          (.drawImage g (:image m) (:x m) (:y m) this))
+
                         (-> (Toolkit/getDefaultToolkit) .sync)
                         (.dispose g))
 
                       (actionPerformed [e]
-                        (dosync (alter craft move-craft))
+                        (dosync
+
+                         (alter craft move-craft)
+
+                         (alter missiles #(filter :visible? (map move-missile %))))
+
                         (proxy-super repaint)))
 
               timer (Timer. 5 board)]
 
           (.addKeyListener board t-adapter)
           (.setFocusable board true)
-          (.setBackground board Color/GREEN)
+          (.setBackground board Color/WHITE)
           (.setDoubleBuffered board true)
           (.start timer)
           board)))
