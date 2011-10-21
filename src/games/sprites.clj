@@ -7,12 +7,14 @@
 
 (def board-width 390)
 (def missile-speed 2)
-(def craft-size 6)
 
 (let [craft (ImageIcon. (load-resource "craft.png"))
       missile (ImageIcon. (load-resource "missile.png"))]
   (def craft-image (.getImage craft))
   (def missile-image (.getImage missile)))
+
+(def craft-width (.getWidth craft-image))
+(def craft-height (.getHeight craft-image))
 
 (defrecord Craft
     [x y dx dy image])
@@ -54,25 +56,22 @@
       :x nx
       :visible? (< nx board-width))))
 
-(def keys-set (ref #{}))
-
-(def missiles (ref []))
-
 (defn- make-board
   ([] (make-board accelerate))
   ([fn] (let [craft (ref (make-craft 40 60))
+              missiles (ref ())
 
               t-adapter (proxy [KeyAdapter]
                             []
 
                           (keyPressed [e]
                             (let [k-code (.getKeyCode e)]
-                              (dosync (commute keys-set conj k-code))
+                              ;; (logging/debug "keyPressed:" k-code)
                               (if (= k-code KeyEvent/VK_SPACE)
                                 (dosync
                                  (alter missiles conj
-                                        (make-missile (+ (:x craft) craft-size)
-                                                      (+ (:y craft) (/ craft-size 2)))))
+                                        (make-missile (+ (:x @craft) craft-width)
+                                                      (+ (:y @craft) (/ craft-height 2)))))
                                 (dosync
                                  (alter craft fn (.getKeyCode e) 1)))))
 
